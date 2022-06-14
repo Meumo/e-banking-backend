@@ -182,7 +182,7 @@ public class BankAccountServiceImpl implements BankAccountService {
     public AccountHistoryDTO getAccountHistory(String accountId, int page, int size) throws BankAccountNotFoundException {
         BankAccount bankAccount = bankAccountRepository.findById(accountId).orElse(null);
         if (bankAccount == null) throw new BankAccountNotFoundException("BankAccount not found");
-        Page<AccountOperation> accountOperations = accountOperationRepository.findByBankAccountId(accountId, PageRequest.of(page, size));
+        Page<AccountOperation> accountOperations = accountOperationRepository.findByBankAccountIdOrderByOperationDateDesc(accountId, PageRequest.of(page, size));
         AccountHistoryDTO accountHistoryDTO = new AccountHistoryDTO();
         List<AccountOperationDTO> accountOperationDTOS = accountOperations.getContent()
                 .stream()
@@ -194,5 +194,28 @@ public class BankAccountServiceImpl implements BankAccountService {
         accountHistoryDTO.setCurrentPage(page);
         accountHistoryDTO.setTotalPages(accountOperations.getTotalPages());
         return accountHistoryDTO;
+    }
+
+    @Override
+    public List<CustomerDTO> searchCustomers(String keyword) {
+        List<Customer> customers=customerRepository.findByNameContains(keyword);
+        List<CustomerDTO> customerDTOS = customers.stream().map(customer -> dtoMapper.fromCustomer(customer)).collect(Collectors.toList());
+        return customerDTOS;
+    }
+
+    @Override
+    public List<BankAccountDTO> getAccountsByCustomer(Long customerId){
+        List<BankAccount> bankAccounts=bankAccountRepository.findByCustomerId(customerId);
+        List<BankAccountDTO> bankAccountDTOS=bankAccounts.stream().map(bankAccount -> {
+            if (bankAccount instanceof CurrentAccount){
+                CurrentAccount currentAccount= (CurrentAccount) bankAccount;
+                 return  dtoMapper.fromCurrentAccount(currentAccount);
+            }
+            else {
+                SavingAccount savingAccount= (SavingAccount) bankAccount;
+               return dtoMapper.fromSavingAccount(savingAccount);
+            }
+        }).collect(Collectors.toList());
+        return bankAccountDTOS;
     }
 }

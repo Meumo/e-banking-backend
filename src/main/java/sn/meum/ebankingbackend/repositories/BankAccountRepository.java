@@ -7,4 +7,5 @@ import sn.meum.ebankingbackend.entities.BankAccount;
 import java.util.List;
 
 public interface BankAccountRepository extends JpaRepository<BankAccount,String> {
+    List<BankAccount> findByCustomerId(Long customerId);
 }
