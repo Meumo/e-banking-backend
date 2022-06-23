@@ -40,4 +40,5 @@ public interface BankAccountService {
     List<CustomerDTO> searchCustomers(String keyword);
 
     List<BankAccountDTO> getAccountsByCustomer(Long customerId);
+
 }
